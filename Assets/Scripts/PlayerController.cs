@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public GameObject explosionPrefab;
 
     public AudioClip collectSound;
+    public AudioClip footstepSound;
     private AudioSource audioSource;
 
     private int score = 0;         // Змінна для рахунку
@@ -24,6 +25,13 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         spriteRn = GetComponent<SpriteRenderer>();
         audioSource = GetComponent<AudioSource>();
+
+        if (footstepSound != null)
+        {
+            audioSource.clip = footstepSound;
+            audioSource.loop = true;
+        }
+
         UpdateScoreText(); // Показати 0 на старті
     }
 
@@ -36,13 +44,19 @@ public class PlayerController : MonoBehaviour
 
         if (moveInput.sqrMagnitude > 0)
         {
-            //transform.localScale = new Vector3(0.17f, 0.17f, 0.17f);
             animator.SetBool("IsMoving", true); // Вмикаємо біг
+            if (!audioSource.isPlaying)
+            {
+                audioSource.Play();
+            }
         }
         else
         {
-            //transform.localScale = new Vector3(0.225f, 0.225f, 0.225f);
             animator.SetBool("IsMoving", false); // Вмикаємо стійку
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
         }
 
         // 2. Дзеркалення (Поворот вліво/вправо)
