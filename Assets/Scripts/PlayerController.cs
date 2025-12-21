@@ -5,25 +5,25 @@ using Cinemachine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float walkSpeed = 1.75f;  // Повільна хода (для атмосфери)
-    public float runSpeed = 3f;   // Біг (для втечі)
-    //public float speed = 5f;       // Швидкість руху
-    public Text scoreText;         // Посилання на текст лічильника
+    public float walkSpeed = 1.75f;
+    public float runSpeed = 3f;
+    //public float speed = 5f;
+    public Text scoreText;
     public GameObject explosionPrefab;
 
-    public UnityEngine.Rendering.Universal.Light2D flashlightBeam; // Сюди тягнемо об'єкт "Flashlight"
+    public UnityEngine.Rendering.Universal.Light2D flashlightBeam;
     public UnityEngine.Rendering.Universal.Light2D playerAura;
 
     public AudioClip collectSound;
     public AudioClip footstepSound;
 
     private AudioSource audioSource;
-    private int score = 0;         // Змінна для рахунку
+    private int score = 0;
     private Rigidbody2D rb;
     private Vector2 moveInput;
 
-    private Animator animator;       // Посилання на аніматор
-    private SpriteRenderer spriteRn; // Посилання на картинку (щоб дзеркалити)
+    private Animator animator;
+    private SpriteRenderer spriteRn;
 
     private float currentSpeed;
 
@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour
             audioSource.loop = true;
         }
 
-        UpdateScoreText(); // Показати 0 на старті
+        UpdateScoreText();
         currentSpeed = walkSpeed;
     }
 
@@ -49,66 +49,61 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
         {
             if (flashlightBeam != null)
-                flashlightBeam.enabled = !flashlightBeam.enabled; // Перемикаємо промінь
+                flashlightBeam.enabled = !flashlightBeam.enabled;
 
-            if (playerAura != null)
-                playerAura.enabled = !playerAura.enabled;         // Перемикаємо ауру
+            //if (playerAura != null)
+                //playerAura.enabled = !playerAura.enabled;
         }
 
         // --- ЛОГІКА БІГУ (SHIFT) ---
         if (Input.GetKey(KeyCode.LeftShift))
         {
-            currentSpeed = runSpeed; // Біжимо
-            animator.speed = 1.5f;   // Пришвидшуємо анімацію ніг (для краси)
+            currentSpeed = runSpeed;
+            animator.speed = 1.5f;
             audioSource.pitch = 1.5f;
         }
         else
         {
-            currentSpeed = walkSpeed; // Йдемо
-            animator.speed = 1f;      // Нормальна анімація
+            currentSpeed = walkSpeed;
+            animator.speed = 1f;
             audioSource.pitch = 1f;
         }
 
-        // Отримуємо введення з клавіатури (WASD або стрілки)
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
         moveInput = moveInput.normalized;
 
         if (moveInput.sqrMagnitude > 0)
         {
-            animator.SetBool("IsMoving", true); // Вмикаємо біг
+            animator.SetBool("IsMoving", true);
             if (!audioSource.isPlaying) audioSource.Play();
         }
         else
         {
-            animator.SetBool("IsMoving", false); // Вмикаємо стійку
+            animator.SetBool("IsMoving", false);
             if (audioSource.isPlaying) audioSource.Stop();
         }
 
-        // 2. Дзеркалення (Поворот вліво/вправо)
         if (moveInput.x > 0)
         {
-            spriteRn.flipX = false; // Дивиться вправо (оригінал)
+            spriteRn.flipX = false;
         }
         else if (moveInput.x < 0)
         {
-            spriteRn.flipX = true;  // Дивиться вліво (віддзеркалений)
+            spriteRn.flipX = true;
         }
     }
 
     void FixedUpdate()
     {
-        // Рухаємо персонажа
         rb.MovePosition(rb.position + moveInput * currentSpeed * Time.fixedDeltaTime);
     }
 
-    // Взаємодія з предметами (блоками)
+
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Diamant")) // Перевіряємо, чи це блок
+        if (other.CompareTag("Diamant"))
         {
-            // СТВОРЮЄМО ВИБУХ
-            // Instantiate(що, де, який поворот)
             Instantiate(explosionPrefab, other.transform.position, Quaternion.identity);
 
             audioSource.PlayOneShot(collectSound);
@@ -117,17 +112,16 @@ public class PlayerController : MonoBehaviour
             Destroy(other.gameObject);
             UpdateScoreText();
 
-            //if (GameObject.FindGameObjectsWithTag("Diamant").Length <= 1)
-            //{
-            //    int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
+            if (GameObject.FindGameObjectsWithTag("Diamant").Length <= 1)
+            {
+                int nextSceneIndex = SceneManager.GetActiveScene().buildIndex + 1;
 
-            //    SceneManager.LoadScene(nextSceneIndex);
-            //}
+                SceneManager.LoadScene(nextSceneIndex);
+            }
         }
 
         if (other.CompareTag("Enemy"))
         {
-            // Перезавантажуємо поточну сцену (рівень спочатку)
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
@@ -136,7 +130,6 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Enemy"))
         {
-            // Той самий код перезапуску
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
